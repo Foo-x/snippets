@@ -1,0 +1,60 @@
+# dev run
+FROM mcr.microsoft.com/vscode/devcontainers/javascript-node:0-14 as dev
+
+ENV HOST=0.0.0.0
+
+USER node
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm ci
+
+COPY --chown=node:node . .
+
+RUN npm run build
+
+EXPOSE 3000
+
+CMD ["npm", "run", "dev"]
+
+
+# build
+FROM node:14-slim as build
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build
+
+
+# deps
+FROM node:14-slim as deps
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm ci --only=production
+
+
+# prod run
+FROM node:14-slim as prod
+
+ENV HOST=0.0.0.0
+
+USER node
+WORKDIR /app
+
+COPY package.json ./
+COPY --from=build /app/dist dist
+COPY --from=deps /app/node_modules node_modules
+
+EXPOSE 3000
+
+CMD ["npm", "start"]
