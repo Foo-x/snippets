@@ -1,5 +1,5 @@
 # dev run
-FROM mcr.microsoft.com/vscode/devcontainers/javascript-node:0-14 as dev
+FROM mcr.microsoft.com/vscode/devcontainers/javascript-node:0-16 as dev
 
 ENV HOST=0.0.0.0
 
@@ -20,7 +20,7 @@ CMD ["npm", "run", "dev"]
 
 
 # build
-FROM node:14-slim as build
+FROM node:16-slim as build
 
 WORKDIR /app
 
@@ -34,7 +34,7 @@ RUN npm run build
 
 
 # deps
-FROM node:14-slim as deps
+FROM node:16-slim as deps
 
 WORKDIR /app
 
@@ -44,7 +44,7 @@ RUN npm ci --only=production
 
 
 # prod run
-FROM node:14-slim as prod
+FROM node:16-slim as prod
 
 ENV HOST=0.0.0.0
 
