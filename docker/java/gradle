@@ -1,0 +1,30 @@
+FROM ubuntu:22.04
+
+ENV HOST=0.0.0.0
+
+ARG JAVA_VERSION=17
+ARG GRADLE_VERSION=7
+
+RUN apt update && export DEBIAN_FRONTEND=noninteractive \
+    && apt install -y --no-install-recommends \
+    ca-certificates \
+    curl \
+    git \
+    vim \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /tmp
+
+RUN curl https://raw.githubusercontent.com/microsoft/vscode-dev-containers/v0.245.2/script-library/java-debian.sh -o java-debian.sh \
+    && bash java-debian.sh "${JAVA_VERSION}" \
+    && curl https://raw.githubusercontent.com/microsoft/vscode-dev-containers/v0.245.2/script-library/gradle-debian.sh -o gradle-debian.sh \
+    && bash gradle-debian.sh "${GRADLE_VERSION}"
+
+RUN adduser --disabled-password --gecos "" java
+USER java
+WORKDIR /workspace/backend
+
+COPY --chown=java:java . .
+
+EXPOSE 8080
