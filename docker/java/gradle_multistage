@@ -1,0 +1,19 @@
+# deps
+FROM gradle:7.5-jdk17-alpine as deps
+
+WORKDIR /app
+
+COPY src src
+COPY build.gradle gradle.properties settings.gradle ./
+
+RUN gradle assemble
+
+
+# prod
+FROM gcr.io/distroless/java17-debian11 as prod
+
+WORKDIR /app
+
+COPY --from=deps /app/build/libs/foo.jar ./
+
+CMD ["foo.jar"]

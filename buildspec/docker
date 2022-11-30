@@ -1,0 +1,35 @@
+# set environment variables IMAGE_NAME and CONTAINER_NAME in CodeBuild
+version: 0.2
+
+env:
+  variables:
+    DOCKER_BUILDKIT: 1
+  parameter-store:
+    DOCKER_USER: /dockerhub/user
+    DOCKER_TOKEN: /dockerhub/token
+
+phases:
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - echo $DOCKER_TOKEN | docker login -u $DOCKER_USER --password-stdin
+      - AWS_ACCOUNT_ID=$(echo ${CODEBUILD_BUILD_ARN} | cut -f 5 -d :)
+      - REPOSITORY_URI=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_NAME}
+      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+  build:
+    commands:
+      - echo "Build started on `date`"
+      - echo "Building the Docker image..."
+      - docker build -t ${REPOSITORY_URI}:latest .
+      - docker tag ${REPOSITORY_URI}:latest ${REPOSITORY_URI}:${IMAGE_TAG}
+  post_build:
+    commands:
+      - echo "Build completed on `date`"
+      - echo "Pushing the Docker images..."
+      - docker push ${REPOSITORY_URI}:latest
+      - docker push ${REPOSITORY_URI}:${IMAGE_TAG}
+      - printf '[{"name":"'${CONTAINER_NAME}'", "imageUri":"'${REPOSITORY_URI}:${IMAGE_TAG}'"}]' > imagedefinitions.json
+artifacts:
+  files:
+    - imagedefinitions.json

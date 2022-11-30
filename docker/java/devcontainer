@@ -1,0 +1,17 @@
+FROM mcr.microsoft.com/vscode/devcontainers/java:17
+
+ENV HOST=0.0.0.0
+# JAVA_HOMEが正しくないので明示的に設定する
+# https://github.com/devcontainers/images/issues/158
+ENV JAVA_HOME=/usr/lib/jvm/msopenjdk-current
+RUN apt update && export DEBIAN_FRONTEND=noninteractive \
+    && apt install -y --no-install-recommends \
+    bash-completion \
+    vim \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
+USER vscode
+WORKDIR /workspace/backend
+COPY --chown=vscode:vscode . .
+
+EXPOSE 8080
