@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/playwright:v1.34.3-jammy
+
+RUN apt update && export DEBIAN_FRONTEND=noninteractive \
+    && apt install -y \
+    fonts-noto \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN apt update && export DEBIAN_FRONTEND=noninteractive \
+    && apt install -y --no-install-recommends \
+    bash-completion \
+    vim \
+    && apt clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER pwuser
+
+RUN mkdir -p ~/.config/fontconfig \
+    && echo "<?xml version='1.0'?><!DOCTYPE fontconfig SYSTEM 'fonts.dtd'><fontconfig><match target=\"pattern\"><test qual=\"any\" name=\"family\"><string>serif</string></test><edit name=\"family\" mode=\"prepend\" binding=\"same\"><string>Noto Serif CJK JP</string></edit></match><match target=\"pattern\"><test qual=\"any\" name=\"family\"><string>sans-serif</string></test><edit name=\"family\" mode=\"prepend\" binding=\"same\"><string>Noto Sans CJK JP</string></edit></match><match target=\"pattern\"><test qual=\"any\" name=\"family\"><string>mono</string></test><edit name=\"family\" mode=\"prepend\" binding=\"same\"><string>Noto Sans Mono CJK JP</string></edit></match></fontconfig>" > ~/.config/fontconfig/fonts.conf
