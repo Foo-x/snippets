@@ -1,4 +1,5 @@
 FROM nginx:stable-alpine-slim
+
 ENV TZ=Asia/Tokyo
 
 COPY default.conf /etc/nginx/templates/default.conf.template
