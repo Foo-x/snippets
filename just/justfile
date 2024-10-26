@@ -1,0 +1,9 @@
+[private]
+@default:
+    just --choose
+
+# list recipes
+@help:
+    just --list
+
+alias h := help
